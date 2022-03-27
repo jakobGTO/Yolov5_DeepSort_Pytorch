@@ -12,6 +12,8 @@ __trained_urls = {
     'https://drive.google.com/uc?id=17ymnLglnc64NRvGOitY3BqMRS9UWd1wg',
     'resnet50_msmt17':
     'https://drive.google.com/uc?id=1ep7RypVDOthCRIAqDnn4_N-UhkkFHJsj',
+    'resnet50_jakob':
+    'https://drive.google.com/uc?id=1hC2iiHjjFy7l8tw13cE2EjlTgBLYf2Up',
 
     'resnet50_fc512_market1501':
     'https://drive.google.com/uc?id=1kv8l5laX_YCdIGVCetjlNdzKIA3NvsSt',
