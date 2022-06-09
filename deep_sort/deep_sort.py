@@ -2,62 +2,85 @@ import numpy as np
 import torch
 import sys
 import gdown
-import os
+from os.path import exists as file_exists, join
 
 from .sort.nn_matching import NearestNeighborDistanceMetric
 from .sort.detection import Detection
 from .sort.tracker import Tracker
-from .deep.reid_model_factory import show_downloadeable_models, get_model_link, is_model_in_factory, \
-    is_model_type_in_model_path, get_model_type, show_supported_models
+from .deep.reid_model_factory import show_downloadeable_models, get_model_url, get_model_name
 
-sys.path.append('deep_sort/deep/reid')
 from torchreid.utils import FeatureExtractor
 from torchreid.utils.tools import download_url
-
-show_downloadeable_models()
 
 __all__ = ['DeepSort']
 
 
 class DeepSort(object):
+<<<<<<< HEAD
     def __init__(self, model, device, max_dist=0.2, max_iou_distance=0.7, max_age=70, n_init=3, nn_budget=100):
+        # models trained on: market1501, dukemtmcreid and msmt17
         if is_model_in_factory(model):
             # download the model
-            model_path = os.path.join('deep_sort/deep/checkpoint', model + '.pth')
-            gdown.download(get_model_link(model), model_path, quiet=False)
-
+            model_path = join('deep_sort/deep/checkpoint', model + '.pth')
+            if not file_exists(model_path):
+                gdown.download(get_model_link(model), model_path, quiet=False)
+            '''
             self.extractor = FeatureExtractor(
                 # get rid of dataset information DeepSort model name
                 model_name=model.rsplit('_', 1)[:-1][0],
                 model_path=model_path,
                 device=str(device)
             )
+            '''
         else:
             if is_model_type_in_model_path(model):
                 model_name = get_model_type(model)
+                '''
                 self.extractor = FeatureExtractor(
-                    # get rid of dataset information DeepSort model name
                     model_name=model_name,
                     model_path=model,
                     device=str(device)
                 )
+                '''
             else:
                 print('Cannot infere model name from provided DeepSort path, should be one of the following:')
                 show_supported_models()
                 exit()
+=======
+    def __init__(self, model_weights, device, max_dist=0.2, max_iou_distance=0.7, max_age=70, n_init=3, nn_budget=100):
+        model_name = get_model_name(model_weights)
+        model_url = get_model_url(model_weights)
 
-        max_cosine_distance = max_dist
+        if not file_exists(model_weights) and model_url is not None:
+            gdown.download(model_url, str(model_weights), quiet=False)
+        elif file_exists(model_weights):
+            pass
+        elif model_url is None:
+            print('No URL associated to the chosen DeepSort weights. Choose between:')
+            show_downloadeable_models()
+            exit()
+
+        self.extractor = FeatureExtractor(
+            # get rid of dataset information DeepSort model name
+            model_name=model_name,
+            model_path=model_weights,
+            device=str(device)
+        )
+>>>>>>> 7fdda0d7631d79186b9ef0776e8a2b07d910c87c
+
+        self.max_dist = max_dist
         metric = NearestNeighborDistanceMetric(
-            "euclidean", max_cosine_distance, nn_budget)
+            "cosine", self.max_dist, nn_budget)
         self.tracker = Tracker(
             metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)
 
-    def update(self, bbox_xywh, confidences, classes, ori_img, use_yolo_preds=False):
+    def update(self, bbox_xywh, confidences, classes, ori_img):
         self.height, self.width = ori_img.shape[:2]
         # generate detections
-        features = self._get_features(bbox_xywh, ori_img)
+        #features = self._get_features(bbox_xywh, ori_img)
+        featuresz = np.zeros((bbox_xywh.shape[0], 2048))
         bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
-        detections = [Detection(bbox_tlwh[i], conf, features[i]) for i, conf in enumerate(
+        detections = [Detection(bbox_tlwh[i], conf, featuresz[i]) for i, conf in enumerate(
             confidences)]
 
         # run on non-maximum supression
@@ -66,22 +89,21 @@ class DeepSort(object):
 
         # update tracker
         self.tracker.predict()
-        self.tracker.update(detections, classes)
+        self.tracker.update(detections, classes, confidences)
 
         # output bbox identities
         outputs = []
         for track in self.tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
-            if use_yolo_preds:
-                det = track.get_yolo_pred()
-                x1, y1, x2, y2 = self._tlwh_to_xyxy(det.tlwh)
-            else:
-                box = track.to_tlwh()
-                x1, y1, x2, y2 = self._tlwh_to_xyxy(box)
+
+            box = track.to_tlwh()
+            x1, y1, x2, y2 = self._tlwh_to_xyxy(box)
+            
             track_id = track.track_id
             class_id = track.class_id
-            outputs.append(np.array([x1, y1, x2, y2, track_id, class_id], dtype=np.int))
+            conf = track.conf
+            outputs.append(np.array([x1, y1, x2, y2, track_id, class_id, conf]))
         if len(outputs) > 0:
             outputs = np.stack(outputs, axis=0)
         return outputs
@@ -141,7 +163,8 @@ class DeepSort(object):
             im = ori_img[y1:y2, x1:x2]
             im_crops.append(im)
         if im_crops:
-            features = self.extractor(im_crops)
+            #features = self.extractor(im_crops)
+            features = np.array([])
         else:
             features = np.array([])
         return features
