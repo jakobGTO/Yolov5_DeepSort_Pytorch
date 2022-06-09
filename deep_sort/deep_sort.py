@@ -24,7 +24,11 @@ class DeepSort(object):
             model_path = join('deep_sort/deep/checkpoint', model + '.pth')
             if not file_exists(model_path):
                 gdown.download(get_model_link(model), model_path, quiet=False)
+<<<<<<< HEAD
             '''
+=======
+
+>>>>>>> 18e650cbef191a30e8ac321d5c9a0a455861b593
             self.extractor = FeatureExtractor(
                 # get rid of dataset information DeepSort model name
                 model_name=model.rsplit('_', 1)[:-1][0],

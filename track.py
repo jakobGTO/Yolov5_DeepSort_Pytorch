@@ -82,6 +82,7 @@ def run(
         source = check_file(source)  # download
 
     # Directories
+<<<<<<< HEAD
     if not isinstance(yolo_weights, list):  # single yolo model
         exp_name = str(yolo_weights).rsplit('/', 1)[-1].split('.')[0]
     elif type(yolo_weights) is list and len(yolo_weights) == 1:  # single models after --yolo_weights
@@ -91,6 +92,17 @@ def run(
     exp_name = name if name is not None else exp_name + "_" + str(deep_sort_weights).split('/')[-1].split('.')[0]
     save_dir = increment_path(Path(project) / exp_name, exist_ok=exist_ok)  # increment run
     (save_dir / 'tracks' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
+=======
+    if type(yolo_model) is str:
+        exp_name = yolo_model.split(".")[0]
+    elif type(yolo_model) is list and len(yolo_model) == 1:
+        exp_name = yolo_model[0].split(".")[0]
+    else:
+        exp_name = "ensemble"
+    exp_name = exp_name + "_" + deep_sort_model.split('/')[-1].split('.')[0]
+    save_dir = increment_path(Path(project) / exp_name, exist_ok=exist_ok)  # increment run if project name exists
+    save_dir.mkdir(parents=True, exist_ok=True)  # make dir
+>>>>>>> 18e650cbef191a30e8ac321d5c9a0a455861b593
 
     # Load model
     device = select_device(device)
@@ -142,7 +154,11 @@ def run(
 
         # Inference
         visualize = increment_path(save_dir / Path(path[0]).stem, mkdir=True) if opt.visualize else False
+<<<<<<< HEAD
         pred = model(im, augment=opt.augment, visualize=visualize)
+=======
+        pred = model(img, augment=opt.augment, visualize=visualize)
+>>>>>>> 18e650cbef191a30e8ac321d5c9a0a455861b593
         t3 = time_sync()
         dt[1] += t3 - t2
 

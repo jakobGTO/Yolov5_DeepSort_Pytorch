@@ -80,15 +80,25 @@ $ python track.py --source 0 --yolo_model yolov5n.pt --img 640
 
 ### DeepSORT
 
+<<<<<<< HEAD
 The above applies to DeepSORT models as well. Choose a ReID model based on your needs from this ReID [model zoo](https://kaiyangzhou.github.io/deep-person-reid/MODEL_ZOO)
+=======
+The above applies to DeepSort models as well. Choose a ReID model based on your needs from this ReID [model zoo](https://kaiyangzhou.github.io/deep-person-reid/MODEL_ZOO)
+>>>>>>> 18e650cbef191a30e8ac321d5c9a0a455861b593
 
 ```bash
 
 
+<<<<<<< HEAD
 $ python track.py --source 0 --deep_sort_model osnet_x0_25_market1501.pt
                                                osnet_x0_5_market1501.pt
                                                osnet_x0_75_msmt17.pt
                                                osnet_x1_0_msmt17.pt
+=======
+$ python track.py --source 0 --deep_sort_model osnet_x0_5_market1501
+                                               resnet50_MSMT17
+                                               mobilenetv2_x1_4_dukemtmcreid
+>>>>>>> 18e650cbef191a30e8ac321d5c9a0a455861b593
                                                ...
 ```
 
